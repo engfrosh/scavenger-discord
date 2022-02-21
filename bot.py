@@ -1,6 +1,10 @@
 import json
+import sqlalchemy
+
 import nextcord
 import nextcord.ext.commands
+
+from DatabaseBot import DatabaseBot
 
 import logging
 import os
@@ -32,8 +36,13 @@ logger.debug("Set current directory as: %s", CURRENT_DIRECTORY)
 with open("credentials.json", "r") as f:
     json_data = json.load(f)
     api_token = json_data["api_token"]
+# endregion
 
-client = nextcord.ext.commands.Bot("!")
+# region Connect to Database
+engine = sqlalchemy.create_engine("sqlite+pysqlite:///:memory:", echo=True, future=True)
+# endregion
+
+client = DatabaseBot("!", engine)
 
 
 @client.event
@@ -42,6 +51,10 @@ async def on_ready():
     logger.debug("Logged in.")
     channel = await client.fetch_channel(807100215651074109)
     await channel.send("Logged on and ready to go.")
+
+    with engine.connect() as conn:
+        result = conn.execute(sqlalchemy.text("select 'hello world'"))
+    await channel.send(result)
 
 
 client.run(api_token)
