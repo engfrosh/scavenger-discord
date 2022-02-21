@@ -1,5 +1,6 @@
 import json
 import nextcord
+import nextcord.ext.commands
 
 import logging
 import os
@@ -32,4 +33,15 @@ with open("credentials.json", "r") as f:
     json_data = json.load(f)
     api_token = json_data["api_token"]
 
-print(api_token)
+client = nextcord.ext.commands.Bot("!")
+
+
+@client.event
+async def on_ready():
+
+    logger.debug("Logged in.")
+    channel = await client.fetch_channel(807100215651074109)
+    await channel.send("Logged on and ready to go.")
+
+
+client.run(api_token)
