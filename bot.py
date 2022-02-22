@@ -44,6 +44,9 @@ engine = sqlalchemy.create_engine("sqlite+pysqlite:///:memory:", echo=True, futu
 
 client = DatabaseBot("!", engine)
 
+for cog in ["cogs.scav", "cogs.auth", "cogs.admin"]:
+    client.load_extension(cog)
+
 
 @client.event
 async def on_ready():
