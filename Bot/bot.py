@@ -39,7 +39,8 @@ with open("credentials.json", "r") as f:
 # endregion
 
 # region Connect to Database
-engine = sqlalchemy.create_engine("sqlite+pysqlite:///:memory:", echo=True, future=True)
+DATABASE = "sqlite:///test.db"
+engine = sqlalchemy.create_engine(DATABASE, echo=True, future=True)
 # endregion
 
 client = DatabaseBot("!", engine)
@@ -55,9 +56,9 @@ async def on_ready():
     channel = await client.fetch_channel(807100215651074109)
     await channel.send("Logged on and ready to go.")
 
-    with engine.connect() as conn:
-        result = conn.execute(sqlalchemy.text("select 'hello world'"))
-    await channel.send(result)
+    # with engine.connect() as conn:
+    #     result = conn.execute(sqlalchemy.text("select 'hello world'"))
+    # await channel.send(result)
 
 
 client.run(api_token)
