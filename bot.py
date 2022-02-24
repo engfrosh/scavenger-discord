@@ -13,6 +13,8 @@ from math import ceil, floor
 import string
 import random
 
+# TODO settings.guild_id should be deprecated
+
 LOG_LEVEL = logging.DEBUG
 SCAV_QUESTIONS_FILE = "scav_questions.json"
 SETTINGS_FILE = "settings.json"
@@ -405,8 +407,6 @@ async def on_ready():
         save_settings()
 
 
-
-
 @client.event
 async def on_message(message):
     if message.author == client.user:
@@ -415,8 +415,7 @@ async def on_message(message):
         return
     message_array = message.content.lower().strip().split()
 
-
-    #* GUESS 
+    # * GUESS
     if settings["scav"]["allowed"] and (message_array[0] == "\\guess" or message_array[0] == "!"):
         active_scav_team = scav_game.is_scav_channel(message.channel.id)
         if active_scav_team is not False:
@@ -442,7 +441,7 @@ async def on_message(message):
             await message.channel.send("This is not a SCAV channel!")
             return
 
-    #* NEW TEAM
+    # * NEW TEAM
     if settings["scav"]["allowed"] and settings["scav"]["self_registration_allowed"] and message_array[0] == "\\newteam":
         if len(message_array) > 1:
             team_name = " ".join(message_array[1:])
@@ -460,7 +459,7 @@ async def on_message(message):
         await message.delete()
         return
 
-    #* Enable / Disable Scav
+    # * Enable / Disable Scav
     if (message_array[0] == "\\enable" or message_array[0] == "\\disable") and is_admin(message.author.id):
         if len(message_array) <= 1:
             await message.channel.send("No setting specified")
@@ -483,7 +482,7 @@ async def on_message(message):
         await message.channel.send("{} is now {}".format(modified_setting_name, action_title))
         return
 
-    #* Lock / Unlock
+    # * Lock / Unlock
     if settings["scav"]["allowed"] and (
             message_array[0] == "\\lockout" or message_array[0] == "\\unlock") and (
             is_admin(message.author.id) or is_scav_manager(message.author.id)):
@@ -503,7 +502,7 @@ async def on_message(message):
         await message.delete()
         return
 
-    #* Get Question
+    # * Get Question
     if settings["scav"]["allowed"] and (message_array[0] == "\\question" or message_array[0] == "?"):
         active_scav_team = scav_game.is_scav_channel(message.channel.id)
         if active_scav_team is not False:
@@ -515,7 +514,7 @@ async def on_message(message):
             await message.channel.send("This is not a SCAV channel!")
         return
 
-    #* Get Hing
+    # * Get Hing
     if settings["scav"]["allowed"] and (message_array[0] == "\\hint"):
         active_scav_team = scav_game.is_scav_channel(message.channel.id)
         if active_scav_team is not False:
@@ -531,7 +530,7 @@ async def on_message(message):
             await message.channel.send("This is not a SCAV channel!")
         return
 
-    #* Get Help
+    # * Get Help
     if message_array[0] == "\\help":
         if scav_game.is_scav_channel(message.channel.id):
             await message.channel.send(settings["help_text"])
@@ -539,7 +538,7 @@ async def on_message(message):
         else:
             await message.channel.send("Please `@Grant` for help")
 
-    #* Authenticate New User
+    # * Authenticate New User
     if message_array[0][0] == "$":
         await message.delete()
         if message_array[0] in user_registrations:
@@ -588,13 +587,9 @@ async def on_message(message):
             await message.channel.send("Invalid activation code")
         return
 
-    #* Admin Commands
+    # * Admin Commands
     if is_admin(message.author.id):
-        if message_array[0] == "\\reload":
-            await reload_files()
-            await channels["bot_status_channel"].send("Files Reloaded")
-            await message.delete()
-        elif message_array[0] == "\\reset_team":
+        if message_array[0] == "\\reset_team":
             team_id = int(message_array[1])
             if team_id in scav_game.teams:
                 await scav_game.teams[team_id].reset_team()
@@ -621,9 +616,17 @@ async def on_message(message):
     else:
         return
 
-
-# region Main Script
 load_all_settings()
+
+@client.slash_command(guild_ids=settings["guild_ids"])
+async def reload(interaction: nextcord.Interaction):
+    if is_admin(interaction.user.id):
+        await reload_files()
+        await interaction.response.send_message("Reloaded Files", ephemeral=True)
+    else:
+        await interaction.response.send_message("You do not have permission to reload", ephemeral=True)
+
+
 
 # region Load Credentials
 with open(settings["credentials_file"], "r") as f:
@@ -634,4 +637,3 @@ bot_token = credentials["api_token"]
 
 
 client.run(bot_token)
-# endregion
