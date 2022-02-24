@@ -405,6 +405,8 @@ async def on_ready():
         save_settings()
 
 
+
+
 @client.event
 async def on_message(message):
     if message.author == client.user:
@@ -413,6 +415,8 @@ async def on_message(message):
         return
     message_array = message.content.lower().strip().split()
 
+
+    #* GUESS 
     if settings["scav"]["allowed"] and (message_array[0] == "\\guess" or message_array[0] == "!"):
         active_scav_team = scav_game.is_scav_channel(message.channel.id)
         if active_scav_team is not False:
@@ -420,7 +424,6 @@ async def on_message(message):
                 if settings["scav"]["enabled"]:
                     lockout_time = active_scav_team.is_team_locked_out()
                     if lockout_time == 0:
-                        # await message.channel.send("Checking Your Guess!")
                         if len(message_array) < 2:
                             await message.channel.send("You need to guess something!\nUse the format: ```! YOURGUESS```")
                             return
@@ -439,6 +442,7 @@ async def on_message(message):
             await message.channel.send("This is not a SCAV channel!")
             return
 
+    #* NEW TEAM
     if settings["scav"]["allowed"] and settings["scav"]["self_registration_allowed"] and message_array[0] == "\\newteam":
         if len(message_array) > 1:
             team_name = " ".join(message_array[1:])
@@ -456,6 +460,7 @@ async def on_message(message):
         await message.delete()
         return
 
+    #* Enable / Disable Scav
     if (message_array[0] == "\\enable" or message_array[0] == "\\disable") and is_admin(message.author.id):
         if len(message_array) <= 1:
             await message.channel.send("No setting specified")
@@ -478,6 +483,7 @@ async def on_message(message):
         await message.channel.send("{} is now {}".format(modified_setting_name, action_title))
         return
 
+    #* Lock / Unlock
     if settings["scav"]["allowed"] and (
             message_array[0] == "\\lockout" or message_array[0] == "\\unlock") and (
             is_admin(message.author.id) or is_scav_manager(message.author.id)):
@@ -497,6 +503,7 @@ async def on_message(message):
         await message.delete()
         return
 
+    #* Get Question
     if settings["scav"]["allowed"] and (message_array[0] == "\\question" or message_array[0] == "?"):
         active_scav_team = scav_game.is_scav_channel(message.channel.id)
         if active_scav_team is not False:
@@ -508,6 +515,7 @@ async def on_message(message):
             await message.channel.send("This is not a SCAV channel!")
         return
 
+    #* Get Hing
     if settings["scav"]["allowed"] and (message_array[0] == "\\hint"):
         active_scav_team = scav_game.is_scav_channel(message.channel.id)
         if active_scav_team is not False:
@@ -523,6 +531,7 @@ async def on_message(message):
             await message.channel.send("This is not a SCAV channel!")
         return
 
+    #* Get Help
     if message_array[0] == "\\help":
         if scav_game.is_scav_channel(message.channel.id):
             await message.channel.send(settings["help_text"])
@@ -530,6 +539,7 @@ async def on_message(message):
         else:
             await message.channel.send("Please `@Grant` for help")
 
+    #* Authenticate New User
     if message_array[0][0] == "$":
         await message.delete()
         if message_array[0] in user_registrations:
@@ -578,6 +588,7 @@ async def on_message(message):
             await message.channel.send("Invalid activation code")
         return
 
+    #* Admin Commands
     if is_admin(message.author.id):
         if message_array[0] == "\\reload":
             await reload_files()

@@ -6,8 +6,7 @@
     "admin_role": 731598964167803094,
     "profile_picture": "ProfilePicture.jpg",
     "profile_picture_set": true,
-    "scav_manager_users": [
-    ],
+    "scav_manager_users": [],
     "scav_manager_role": 812914781345677362,
     "users_file": "users.json",
     "guild_id": 731598642426675301,
@@ -17,12 +16,13 @@
     },
     "scav": {
         "allowed": true,
-        "enabled": false,
+        "enabled": true,
         "automatic_start": false,
         "start_time": "",
         "end_time": "",
         "default_lockout_time": 15,
-        "category": 807339586484568094
+        "category": 807339586484568094,
+        "self_registration_allowed": false
     },
     "bot_status_channel_active": true,
     "bot_status_channel_id": 807100215651074109,
