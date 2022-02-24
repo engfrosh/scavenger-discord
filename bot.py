@@ -455,18 +455,6 @@ async def on_message(message):
         await message.delete()
         return
 
-    # * Get Question
-    if (message_array[0] == "\\question" or message_array[0] == "?"):
-        active_scav_team = scav_game.is_scav_channel(message.channel.id)
-        if active_scav_team is not False:
-            if settings["scav"]["enabled"]:
-                await active_scav_team.ask_question()
-            else:
-                await message.channel.send("SCAV is not enabled")
-        else:
-            await message.channel.send("This is not a SCAV channel!")
-        return
-
     # * Get Hing
     if (message_array[0] == "\\hint"):
         active_scav_team = scav_game.is_scav_channel(message.channel.id)
@@ -644,12 +632,12 @@ async def team(interaction: nextcord.Interaction,
                                          })):
     if not (is_admin(interaction.user.id) or is_scav_manager(interaction.user.id)):
         await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
-        return 
+        return
 
     active_scav_team = scav_game.is_scav_channel(interaction.channel_id)
     if active_scav_team is False:
         await interaction.response.send_message("Not a scav channel")
-        return 
+        return
 
     if action == "unlock":
         await active_scav_team.unlock()
@@ -665,14 +653,25 @@ async def team(interaction: nextcord.Interaction,
         logger.error(f"Unkown action {action}")
         return
 
-    
 
-    # region Load Credentials
+@client.slash_command(guild_ids=settings["guild_ids"], description="Get the current question", name="question")
+async def slash_get_question(interaction: nextcord.Interaction):
+    active_scav_team = scav_game.is_scav_channel(interaction.channel_id)
+    if active_scav_team is not False:
+        if settings["scav"]["enabled"]:
+            await active_scav_team.ask_question()
+            await interaction.response.send_message("Here is your current question:", ephemeral=True)
+        else:
+            await interaction.response.send_message("SCAV is not enabled")
+    else:
+        await interaction.response.send_message("This is not a SCAV channel!", ephemeral=True)
+    return
+
+# region Load Credentials
 with open(settings["credentials_file"], "r") as f:
     credentials = json.load(f)
 
 bot_token = credentials["api_token"]
 # endregion
-
 
 client.run(bot_token)
