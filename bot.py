@@ -455,14 +455,6 @@ async def on_message(message):
         await message.delete()
         return
 
-    # * Get Help
-    if message_array[0] == "\\help":
-        if scav_game.is_scav_channel(message.channel.id):
-            await message.channel.send(settings["help_text"])
-            return
-        else:
-            await message.channel.send("Please `@Grant` for help")
-
     # * Authenticate New User
     if message_array[0][0] == "$":
         await message.delete()
@@ -514,11 +506,7 @@ async def on_message(message):
 
     # * Admin Commands
     if is_admin(message.author.id):
-        if message_array[0] == "\\reset_team":
-            team_id = int(message_array[1])
-            if team_id in scav_game.teams:
-                await scav_game.teams[team_id].reset_team()
-        elif message_array[0] == "\\remove_scav_manager":
+        if message_array[0] == "\\remove_scav_manager":
             user_id = int(message_array[1])
             if user_id in settings["scav_manager_users"]:
                 settings["scav_manager_users"].remove(user_id)
@@ -612,7 +600,8 @@ async def team(interaction: nextcord.Interaction,
                action: str = SlashOption(name="action", description="The action to manage the scav team", required=True,
                                          choices={
                                              "lock": "lock",
-                                             "unlock": "unlock"
+                                             "unlock": "unlock",
+                                             "reset": "reset"
                                          })):
     if not (is_admin(interaction.user.id) or is_scav_manager(interaction.user.id)):
         await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
@@ -631,6 +620,15 @@ async def team(interaction: nextcord.Interaction,
 
     elif action == "lock":
         await interaction.response.send_message("Not quite finished...", ephemeral=True)
+        return
+
+    elif action == "reset":
+        if not is_admin(interaction.user.id):
+            await interaction.response.send_message("Admin required to use the reset commmand.", ephemeral=True)
+            return
+
+        await active_scav_team.reset_team()
+        await interaction.response.send_message("Scav Team Reset", ephemeral=True)
         return
 
     else:
@@ -668,6 +666,7 @@ async def slash_get_hint(interaction: nextcord.Interaction):
         await interaction.response.send_message("Here is your hint:", ephemeral=True)
     else:
         await interaction.response.send_message("SCAV is not enabled")
+
 
 # region Load Credentials
 with open(settings["credentials_file"], "r") as f:
