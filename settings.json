@@ -10,9 +10,6 @@
     "scav_manager_role": 946524749868175390,
     "users_file": "users.json",
     "guild_id": 731598642426675301,
-    "guild_ids": [
-        731598642426675301
-    ],
     "channels": {
         "bot_status_channel": 807100215651074109,
         "leaderboard_channel": 813043254358442034

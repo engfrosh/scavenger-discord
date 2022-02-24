@@ -15,7 +15,6 @@ from math import ceil, floor
 import string
 import random
 
-# TODO settings.guild_id should be deprecated
 
 LOG_LEVEL = logging.DEBUG
 SCAV_QUESTIONS_FILE = "scav_questions.json"
@@ -413,7 +412,7 @@ async def on_ready():
 load_all_settings()
 
 
-@client.slash_command(guild_ids=settings["guild_ids"], description="Reload bot settings")
+@client.slash_command(guild_ids=[settings["guild_id"]], description="Reload bot settings")
 async def reload(interaction: nextcord.Interaction):
     if is_admin(interaction.user.id):
         await reload_files()
@@ -422,7 +421,7 @@ async def reload(interaction: nextcord.Interaction):
         await interaction.response.send_message("You do not have permission to reload", ephemeral=True)
 
 
-@client.slash_command(guild_ids=settings["guild_ids"], description="Guess an answer for Scav")
+@client.slash_command(guild_ids=[settings["guild_id"]], description="Guess an answer for Scav")
 async def guess(interaction: nextcord.Interaction, answer: str = SlashOption(name="answer", description="Your guess", required=True)):
     active_scav_team: Union[False, ScavTeam] = scav_game.is_scav_channel(interaction.channel_id)
 
@@ -451,7 +450,7 @@ async def guess(interaction: nextcord.Interaction, answer: str = SlashOption(nam
 # region Scav Subcommands
 
 
-@client.slash_command(guild_ids=settings["guild_ids"], name="scav")
+@client.slash_command(guild_ids=[settings["guild_id"]], name="scav")
 async def slash_scav(interaction: nextcord.Interaction):
     pass
 
@@ -541,7 +540,7 @@ async def slash_scav_sub_register(interaction: nextcord.Interaction,
 # region Team Commands
 
 
-@client.slash_command(guild_ids=settings["guild_ids"], name="team")
+@client.slash_command(guild_ids=[settings["guild_id"]], name="team")
 async def slash_team(interaction: nextcord.Interaction):
     pass
 
@@ -607,7 +606,7 @@ async def slash_team_sub_create(interaction: nextcord.Interaction, team_name: st
 # endregion
 
 
-@client.slash_command(guild_ids=settings["guild_ids"], description="Get the current question", name="question")
+@client.slash_command(guild_ids=[settings["guild_id"]], description="Get the current question", name="question")
 async def slash_get_question(interaction: nextcord.Interaction):
     active_scav_team = scav_game.is_scav_channel(interaction.channel_id)
     if active_scav_team is not False:
@@ -621,7 +620,7 @@ async def slash_get_question(interaction: nextcord.Interaction):
     return
 
 
-@client.slash_command(guild_ids=settings["guild_ids"],
+@client.slash_command(guild_ids=[settings["guild_id"]],
                       name="remove_scav_manager", description="Remove a user from interal scav manager database")
 async def slash_remove_scav_manager(interaction: nextcord.Interaction,
                                     user_id: str = SlashOption(name="user_id", description="The user id to remove", required=True)):
@@ -638,7 +637,7 @@ async def slash_remove_scav_manager(interaction: nextcord.Interaction,
     await interaction.response.send_message("You do not have permission to use this command", ephemeral=True)
 
 
-@client.slash_command(guild_ids=settings["guild_ids"], description="Get a hint for the current question", name="hint")
+@client.slash_command(guild_ids=[settings["guild_id"]], description="Get a hint for the current question", name="hint")
 async def slash_get_hint(interaction: nextcord.Interaction):
     active_scav_team = scav_game.is_scav_channel(interaction.channel_id)
     if active_scav_team is False:
@@ -656,7 +655,7 @@ async def slash_get_hint(interaction: nextcord.Interaction):
         await interaction.response.send_message("SCAV is not enabled")
 
 
-@client.slash_command(guild_ids=settings["guild_ids"],
+@client.slash_command(guild_ids=[settings["guild_id"]],
                       name="authenticate", description="Get your roles using your secret code")
 async def slash_authenticate(interaction: nextcord.Interaction, code=SlashOption(name="code", description="Your secret code", required=True)):
     if code[0] != "$":
