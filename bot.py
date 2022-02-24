@@ -1,7 +1,6 @@
 from typing import Union
 from nextcord import SlashOption
 import nextcord
-from nextcord.ext import commands
 
 import logging
 import os
@@ -9,8 +8,6 @@ import os
 import json
 
 import datetime as dt
-
-from math import ceil, floor
 
 import string
 import random
@@ -52,7 +49,7 @@ if __name__ == "__main__":
 
 # endregion
 
-client = commands.Bot("!")
+client = nextcord.Client()
 
 # region Variable Declerations
 quick_settings = {}
@@ -655,12 +652,10 @@ async def slash_get_hint(interaction: nextcord.Interaction):
                       name="authenticate", description="Get your roles using your secret code")
 async def slash_authenticate(interaction: nextcord.Interaction, code=SlashOption(name="code", description="Your secret code", required=True)):
     # If you get an error for permission denied when trying to change a nickname, it may be that the bot role is not at the
-    # top of the bot list, so is unable to change the higher roled people. 
-    
+    # top of the bot list, so is unable to change the higher roled people.
+
     if code[0] != "$":
         code = f"${code}"
-
-    # TODO Have Nickname Change on Registration
 
     if code not in user_registrations:
         await interaction.response.send_message("Invalid activation code", ephemeral=True)
