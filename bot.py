@@ -1,5 +1,3 @@
-# flake8: noqa
-
 import discord
 
 import logging
@@ -49,14 +47,11 @@ if __name__ == "__main__":
     logger.debug("Module started.")
     logger.debug("Log file set as: %s", LOG_FILE)
 
-# logger.debug("Set current directory as: %s", CURRENT_DIRECTORY)
 # endregion
 
 client = discord.Client()
-# client_user = discord.ClientUser()
 
 # region Variable Declerations
-# settings = {}
 quick_settings = {}
 guild = None
 guild_channels = None
@@ -71,11 +66,6 @@ class ScavTeam():
     def __init__(self, team_info: dict, channel_id: int):
         self.team_info = dict(team_info)
         self.channel_id = channel_id
-        # if "team_name" not in team_info:
-        #     self.team_info["team_name"] = ""
-        # if self.team_info["current_question"] == 0:
-        #     self.team_info["question_completion_time"] = {}
-        #     scav_game.save_team_info()
 
     async def init_channel(self):
         self.channel = await client.fetch_channel(self.channel_id)
@@ -103,7 +93,6 @@ class ScavTeam():
             return 0
 
     async def check_answer(self, guess):
-        # guess = guess.upper()
         if self.team_info["finished"]:
             await self.channel.send("You're already finished!")
             return
@@ -166,7 +155,7 @@ class ScavTeam():
             if "hint_file" in scav_questions[self.team_info["current_question"]]:
                 if "hint_file_display" in scav_questions[self.team_info["current_question"]]:
                     filename = scav_questions[self.team_info["current_question"]
-                                            ]["file_display_name"]
+                                              ]["file_display_name"]
                 else:
                     filename = None
                 f = discord.File(
@@ -203,7 +192,6 @@ class ScavTeam():
                 await self.channel.send(scav_questions[self.team_info["current_question"]]["hint"], file=f)
         else:
             await self.channel.send("Sorry, no hint available")
-        # logger.debug("Team %i asked question %i: %s".format())
 
     async def reset_team(self):
         self.team_info["finished"] = False
@@ -225,7 +213,7 @@ class ScavTeam():
 
     def create_registration_code(self, name="", nickname=""):
         code = "$" + "".join(random.choice(string.ascii_lowercase +
-                                     string.digits) for i in range(8))
+                                           string.digits) for i in range(8))
         global user_registrations
         user_registrations[code] = {
             "name": "",
@@ -244,9 +232,6 @@ class ScavGame():
         logger.debug("Team info to load is a filepath, attempting to load...")
         with open(all_team_info_fp, "r") as f:
             all_team_info = json.load(f)
-        # if type(all_team_info) is not dict:
-        #     raise NotImplementedError(
-        #         "Passed all_team_info is not dict or filepath")
         self.teams = {}
         for key, value in all_team_info.items():
             key = int(key)
@@ -288,7 +273,6 @@ class ScavGame():
             new_role: discord.PermissionOverwrite(read_messages=True),
             scav_manager_role: discord.PermissionOverwrite(read_messages=True)
         }
-        # channel = await guild.create_text_channel(team_name, category=settings["scav"]["category"], overwrites=overwrites)
         channel = await guild.create_text_channel(team_name, overwrites=overwrites)
         team_details = BLANK_TEAM_CSV
         team_details["role"] = new_role.id
@@ -301,7 +285,7 @@ class ScavGame():
         for i in range(settings["scav"]["default_team_size"]):
             reg_codes.append(self.teams[channel.id].create_registration_code())
         await self.leaderboard()
-         
+
         guild = await client.fetch_guild(settings["guild_id"])
         return reg_codes
 
@@ -317,7 +301,7 @@ class ScavGame():
         finished_teams = sorted(
             finished_teams, key=lambda team: team.team_info["finish_time"])
         inprogress_teams = sorted(
-            inprogress_teams, key=lambda team: team.team_info["current_question"],reverse=True)
+            inprogress_teams, key=lambda team: team.team_info["current_question"], reverse=True)
         leaderboard_str = "Standings\n============\n"
         position = 1
         for team in finished_teams:
@@ -371,17 +355,11 @@ def save_user_registrations(indent=4):
 
 
 async def reload_files():
-    # global settings
-    # settings = load_all_settings()
     load_all_settings()
     global scav_questions
     scav_questions = load_scav_questions()
     load_user_registrations()
     await load_scav_teams()
-
-# def graceful_shutdown():
-#     client.logout()
-#     exit()
 
 
 def save_settings(fp=None, indent=4):
@@ -410,30 +388,16 @@ async def load_scav_teams():
 # endregion
 
 
-# settings = load_all_settings()
-# scav_questions = load_scav_questions()
-
-
 @client.event
 async def on_ready():
     logger.info("Successfully Logged In")
-    # if settings["bot_channel_active"]:
-    # for
     print("Connected")
     global guild
     guild = await client.fetch_guild(settings["guild_id"])
-    # guild_channels = await guild.fetch_channels()
-    # print(guild_channels)
-    # with open(CURRENT_DIRECTORY + "/guild.tmp","w") as f:
-    #     for c in guild_channels:
-    #         f.write(c.name + "\n")
-    # print(guild.text_channels)
     channels["bot_status_channel"] = await client.fetch_channel(settings["channels"]["bot_status_channel"])
     channels["leaderboard_channel"] = await client.fetch_channel(settings["channels"]["leaderboard_channel"])
     await channels["bot_status_channel"].send("Hello, I am now working! It is currently {datetime}".format(datetime=dt.datetime.now().isoformat()))
-    # await load_scav_teams()
     await reload_files()
-    # scav_game.save_team_info(CURRENT_DIRECTORY + "/test_teams_out.json.tmp")
     if "profile_picture" in settings and not settings["profile_picture_set"]:
         with open(settings["profile_picture"], "rb") as f:
             await client.user.edit(avatar=f.read())
@@ -474,19 +438,13 @@ async def on_message(message):
         else:
             await message.channel.send("This is not a SCAV channel!")
             return
-        # if settings["scav"]["enabled"]:
-        #     await message.channel.send("Checking your guess...")
-
-        # else:
-        #     await message.channel.send("SCAV is not currently enabled")
-        return
 
     if settings["scav"]["allowed"] and settings["scav"]["self_registration_allowed"] and message_array[0] == "\\newteam":
         if len(message_array) > 1:
             team_name = " ".join(message_array[1:])
-        else: 
+        else:
             team_name = "Team {}".format(len(scav_game.teams))
-        logger.debug("Creating team %s",team_name)
+        logger.debug("Creating team %s", team_name)
         reg_codes = await scav_game.new_scav_team(team_name=team_name)
         code_msg = "Here are your scav team registration codes for team {team_name}\n".format(team_name=team_name)
         code_msg += "```\n"
@@ -496,8 +454,7 @@ async def on_message(message):
         code_msg += "Send one of these codes in a channel in the discord server. Send these to your teammates and have them do the same."
         await message.author.send(code_msg)
         await message.delete()
-        return 
-
+        return
 
     if (message_array[0] == "\\enable" or message_array[0] == "\\disable") and is_admin(message.author.id):
         if len(message_array) <= 1:
@@ -521,7 +478,9 @@ async def on_message(message):
         await message.channel.send("{} is now {}".format(modified_setting_name, action_title))
         return
 
-    if settings["scav"]["allowed"] and (message_array[0] == "\\lockout" or message_array[0] == "\\unlock") and (is_admin(message.author.id) or is_scav_manager(message.author.id)):
+    if settings["scav"]["allowed"] and (
+            message_array[0] == "\\lockout" or message_array[0] == "\\unlock") and (
+            is_admin(message.author.id) or is_scav_manager(message.author.id)):
         active_scav_team = scav_game.is_scav_channel(message.channel.id)
         if active_scav_team is not False:
             if message_array[0] == "\\unlock":
@@ -529,12 +488,9 @@ async def on_message(message):
             else:
                 if len(message_array) == 2:
                     minutes = int(message_array[1])
-                # if len(message_array) == 1:
                 else:
                     minutes = settings["scav"]["default_lockout_time"]
                 await active_scav_team.lockout(minutes)
-                # else:
-                #     await message.channel.send("Error, not implemented custom lockout")
             scav_game.save_team_info()
         else:
             await message.channel.send("Not a SCAV channel")
@@ -613,9 +569,6 @@ async def on_message(message):
                         save_user_registrations()
                         await scav_game.teams[user_registrations[message_array[0]]["scav_team"]].add_player(
                             message.author)
-                        # settings["scav_manager_users"].append(message.author.id)
-                        # save_settings()
-                        # quick_settings["scav_manager_ids"].add(message.author.id)
                         await message.channel.send("Welcome Scav Player!")
                     else:
                         await message.channel.send("Already a Scav Manager or Higher")
@@ -634,7 +587,6 @@ async def on_message(message):
             team_id = int(message_array[1])
             if team_id in scav_game.teams:
                 await scav_game.teams[team_id].reset_team()
-        # elif message_array[0] == "\\new_admin":
         elif message_array[0] == "\\remove_scav_manager":
             user_id = int(message_array[1])
             if user_id in settings["scav_manager_users"]:
@@ -653,29 +605,10 @@ async def on_message(message):
             await scav_game.leaderboard()
         elif message_array[0] == "\\welcome":
             await scav_game.send_introductions()
-            # try:
-            #     await message.delete()
-            # finally:
-            #     return
-            # if message.content.strip().lower() == "\shutdown":
-            #     channels["bot_status_channel"].send("Shutting Down...")
-            #     graceful_shutdown()
         else:
             return
-            # await message.channel.send("Hi Admin!")
     else:
         return
-        # await message.channel.send("Hello!")
-        # print(message.author.id)
-
-
-# @client.event
-# async def on_message_delete(message):
-#     print(message)
-#     print(message.content)
-
-# @client.event
-# async def on_message_edit(before,after):
 
 
 # region Main Script
@@ -685,7 +618,7 @@ load_all_settings()
 with open(settings["credentials_file"], "r") as f:
     credentials = json.load(f)
 
-bot_token = credentials["bot_token"]
+bot_token = credentials["api_token"]
 # endregion
 
 
