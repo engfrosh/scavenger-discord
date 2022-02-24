@@ -435,29 +435,6 @@ async def on_message(message):
         await message.delete()
         return
 
-    # * Enable / Disable Scav
-    if (message_array[0] == "\\enable" or message_array[0] == "\\disable") and is_admin(message.author.id):
-        if len(message_array) <= 1:
-            await message.channel.send("No setting specified")
-            return
-        if message_array[0] == "\\enable":
-            value = True
-            action_title = "enabled"
-        else:
-            value = False
-            action_title = "disabled"
-
-        if message_array[1] == "scav":
-            modified_setting_name = "scav"
-            settings["scav"]["enabled"] = value
-            save_settings()
-        else:
-            await message.channel.send("{} is not a valid setting".format(message_array[1]))
-            return
-
-        await message.channel.send("{} is now {}".format(modified_setting_name, action_title))
-        return
-
     # * Lock / Unlock
     if (
             message_array[0] == "\\lockout" or message_array[0] == "\\unlock") and (
@@ -595,7 +572,7 @@ async def on_message(message):
 load_all_settings()
 
 
-@client.slash_command(guild_ids=settings["guild_ids"])
+@client.slash_command(guild_ids=settings["guild_ids"], description="Reload bot settings")
 async def reload(interaction: nextcord.Interaction):
     if is_admin(interaction.user.id):
         await reload_files()
@@ -604,8 +581,8 @@ async def reload(interaction: nextcord.Interaction):
         await interaction.response.send_message("You do not have permission to reload", ephemeral=True)
 
 
-@client.slash_command(guild_ids=settings["guild_ids"])
-async def guess(interaction: nextcord.Interaction, answer: str = SlashOption(description="Your guess", required=True)):
+@client.slash_command(guild_ids=settings["guild_ids"], description="Guess an answer for Scav")
+async def guess(interaction: nextcord.Interaction, answer: str = SlashOption(name="answer", description="Your guess", required=True)):
     active_scav_team: Union[False, ScavTeam] = scav_game.is_scav_channel(interaction.channel_id)
 
     if active_scav_team is False:
@@ -631,7 +608,33 @@ async def guess(interaction: nextcord.Interaction, answer: str = SlashOption(des
     return
 
 
-# region Load Credentials
+@client.slash_command(guild_ids=settings["guild_ids"], description="Enable / disable scav game")
+async def scav(interaction: nextcord.Interaction,
+               action: str = SlashOption(name="action",
+                                         description="The action to manage the scav game.", required=True, choices={
+                                             "enable": "enable",
+                                             "disable": "disable"
+                                         })):
+
+    if not is_admin(interaction.user.id):
+        await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
+        return
+
+    if action == "enable":
+        settings["scav"]["enabled"] = True
+        save_settings()
+        await interaction.response.send_message("Scav is now enabled.")
+        return
+    elif action == "disable":
+        settings["scav"]["enabled"] = False
+        save_settings()
+        await interaction.response.send_message("Scav is now disabled.")
+        return
+    else:
+        logger.error(f"Invalid action {action}")
+        return
+
+    # region Load Credentials
 with open(settings["credentials_file"], "r") as f:
     credentials = json.load(f)
 
