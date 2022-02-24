@@ -16,7 +16,6 @@
         "leaderboard_channel": 813043254358442034
     },
     "scav": {
-        "allowed": true,
         "enabled": true,
         "automatic_start": false,
         "start_time": "",

@@ -2,7 +2,7 @@
     "819693996104351785": {
         "role": 946476976011612160,
         "team_name": "Team 0",
-        "current_question": 0,
+        "current_question": 1,
         "locked_out_until": "",
         "last_hint": -1,
         "members": [
@@ -11,6 +11,8 @@
         ],
         "finished": false,
         "finish_time": "",
-        "question_completion_time": {}
+        "question_completion_time": {
+            "0": "2022-02-24T14:19:19.629039"
+        }
     }
 }

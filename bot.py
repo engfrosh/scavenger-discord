@@ -1,3 +1,5 @@
+from typing import Union
+from nextcord import SlashOption
 import nextcord
 from nextcord.ext import commands
 
@@ -415,34 +417,8 @@ async def on_message(message):
         return
     message_array = message.content.lower().strip().split()
 
-    # * GUESS
-    if settings["scav"]["allowed"] and (message_array[0] == "\\guess" or message_array[0] == "!"):
-        active_scav_team = scav_game.is_scav_channel(message.channel.id)
-        if active_scav_team is not False:
-            if active_scav_team.is_team_member(message.author.id):
-                if settings["scav"]["enabled"]:
-                    lockout_time = active_scav_team.is_team_locked_out()
-                    if lockout_time == 0:
-                        if len(message_array) < 2:
-                            await message.channel.send("You need to guess something!\nUse the format: ```! YOURGUESS```")
-                            return
-                        else:
-                            await active_scav_team.check_answer(message_array[1])
-                    else:
-                        await message.channel.send("You are locked out for {}:{}".format(floor(lockout_time / 60), lockout_time % 60))
-                    return
-                else:
-                    await message.channel.send("SCAV is currently disabled")
-                    return
-            else:
-                await message.channel.send("You are not allowed to guess in this channel!")
-                return
-        else:
-            await message.channel.send("This is not a SCAV channel!")
-            return
-
     # * NEW TEAM
-    if settings["scav"]["allowed"] and settings["scav"]["self_registration_allowed"] and message_array[0] == "\\newteam":
+    if settings["scav"]["self_registration_allowed"] and message_array[0] == "\\newteam":
         if len(message_array) > 1:
             team_name = " ".join(message_array[1:])
         else:
@@ -483,7 +459,7 @@ async def on_message(message):
         return
 
     # * Lock / Unlock
-    if settings["scav"]["allowed"] and (
+    if (
             message_array[0] == "\\lockout" or message_array[0] == "\\unlock") and (
             is_admin(message.author.id) or is_scav_manager(message.author.id)):
         active_scav_team = scav_game.is_scav_channel(message.channel.id)
@@ -503,7 +479,7 @@ async def on_message(message):
         return
 
     # * Get Question
-    if settings["scav"]["allowed"] and (message_array[0] == "\\question" or message_array[0] == "?"):
+    if (message_array[0] == "\\question" or message_array[0] == "?"):
         active_scav_team = scav_game.is_scav_channel(message.channel.id)
         if active_scav_team is not False:
             if settings["scav"]["enabled"]:
@@ -515,7 +491,7 @@ async def on_message(message):
         return
 
     # * Get Hing
-    if settings["scav"]["allowed"] and (message_array[0] == "\\hint"):
+    if (message_array[0] == "\\hint"):
         active_scav_team = scav_game.is_scav_channel(message.channel.id)
         if active_scav_team is not False:
             if active_scav_team.is_team_member(message.author.id):
@@ -618,6 +594,7 @@ async def on_message(message):
 
 load_all_settings()
 
+
 @client.slash_command(guild_ids=settings["guild_ids"])
 async def reload(interaction: nextcord.Interaction):
     if is_admin(interaction.user.id):
@@ -626,6 +603,32 @@ async def reload(interaction: nextcord.Interaction):
     else:
         await interaction.response.send_message("You do not have permission to reload", ephemeral=True)
 
+
+@client.slash_command(guild_ids=settings["guild_ids"])
+async def guess(interaction: nextcord.Interaction, answer: str = SlashOption(description="Your guess", required=True)):
+    active_scav_team: Union[False, ScavTeam] = scav_game.is_scav_channel(interaction.channel_id)
+
+    if active_scav_team is False:
+        await interaction.response.send_message("This is not a scav channel.", ephemeral=True)
+        return
+
+    if not active_scav_team.is_team_member(interaction.user.id):
+        await interaction.response.send_message("You are not allowed to guess in this channel!", ephemeral=True)
+        return
+
+    if not settings["scav"]["enabled"]:
+        await interaction.response.send_message("SCAV is currently disabled")
+        return
+
+    lockout_time = active_scav_team.is_team_locked_out()
+    if lockout_time == 0:
+        await interaction.response.send_message(f"Checking your answer: {answer}")
+        await active_scav_team.check_answer(answer)
+
+    else:
+        # TODO Update the way lockout times are displayed
+        await interaction.response.send_message("You are locked out for {}:{}".format(floor(lockout_time / 60), lockout_time % 60))
+    return
 
 
 # region Load Credentials
