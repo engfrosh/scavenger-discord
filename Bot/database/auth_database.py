@@ -1,5 +1,5 @@
 from sqlalchemy.orm import registry, relationship
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
 
 mapper_registry = registry()
 Base = mapper_registry.generate_base()
@@ -11,6 +11,7 @@ class UserInvite(Base):
     id = Column(Integer, primary_key=True)
     invite_code = Column(String(10))
     nickname = Column(String(50))
+    used = Column(Boolean, default=False)
 
     roles = relationship("UserInviteRole", back_populates="user_invite")
 

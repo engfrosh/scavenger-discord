@@ -1,0 +1,30 @@
+{
+    "credentials_file": "credentials.json",
+    "admin_users": [
+        360895010494742529
+    ],
+    "admin_role": 731598964167803094,
+    "profile_picture": "ProfilePicture.jpg",
+    "profile_picture_set": true,
+    "scav_manager_users": [
+    ],
+    "scav_manager_role": 812914781345677362,
+    "users_file": "users.json",
+    "guild_id": 731598642426675301,
+    "channels": {
+        "bot_status_channel": 807100215651074109,
+        "leaderboard_channel": 813043254358442034
+    },
+    "scav": {
+        "allowed": true,
+        "enabled": false,
+        "automatic_start": false,
+        "start_time": "",
+        "end_time": "",
+        "default_lockout_time": 15,
+        "category": 807339586484568094
+    },
+    "bot_status_channel_active": true,
+    "bot_status_channel_id": 807100215651074109,
+    "help_text": "Welcome to SCAV!\nUse `?` to get a question, use `!` to guess, for example what is my favorite plant `! SNAKEPLANT`. If you get stuck and need a hint, you can get one by sending `\\hint`, but watch out, you will be locked out for 15 minutes. If you need any  help with the bot please at `@Grant`."
+}
