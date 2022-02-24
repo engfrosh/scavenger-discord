@@ -435,26 +435,6 @@ async def on_message(message):
         await message.delete()
         return
 
-    # * Lock / Unlock
-    if (
-            message_array[0] == "\\lockout" or message_array[0] == "\\unlock") and (
-            is_admin(message.author.id) or is_scav_manager(message.author.id)):
-        active_scav_team = scav_game.is_scav_channel(message.channel.id)
-        if active_scav_team is not False:
-            if message_array[0] == "\\unlock":
-                await active_scav_team.unlock()
-            else:
-                if len(message_array) == 2:
-                    minutes = int(message_array[1])
-                else:
-                    minutes = settings["scav"]["default_lockout_time"]
-                await active_scav_team.lockout(minutes)
-            scav_game.save_team_info()
-        else:
-            await message.channel.send("Not a SCAV channel")
-        await message.delete()
-        return
-
     # * Authenticate New User
     if message_array[0][0] == "$":
         await message.delete()
@@ -601,14 +581,42 @@ async def scav(interaction: nextcord.Interaction,
         return
 
 
-@client.slash_command(guild_ids=settings["guild_ids"], description="Manage scav teams")
-async def team(interaction: nextcord.Interaction,
-               action: str = SlashOption(name="action", description="The action to manage the scav team", required=True,
-                                         choices={
-                                             "lock": "lock",
-                                             "unlock": "unlock",
-                                             "reset": "reset"
-                                         })):
+@client.slash_command(guild_ids=settings["guild_ids"], name="team")
+async def slash_team(interaction: nextcord.Interaction):
+    pass
+    # ,
+    #                  action: str = SlashOption(name="action", description="The action to manage the scav team", required=True,
+    #                                            choices={
+    #                                                #  "lock": "lock",
+    #                                                "unlock": "unlock",
+    #                                                "reset": "reset"
+    #                                            })
+    # if not (is_admin(interaction.user.id) or is_scav_manager(interaction.user.id)):
+    #     await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
+    #     return
+
+    # active_scav_team = scav_game.is_scav_channel(interaction.channel_id)
+    # if active_scav_team is False:
+    #     await interaction.response.send_message("Not a scav channel")
+    #     return
+
+    # elif action == "reset":
+    #     if not is_admin(interaction.user.id):
+    #         await interaction.response.send_message("Admin required to use the reset commmand.", ephemeral=True)
+    #         return
+
+    #     await active_scav_team.reset_team()
+    #     await interaction.response.send_message("Scav Team Reset", ephemeral=True)
+    #     return
+
+    # else:
+    #     logger.error(f"Unkown action {action}")
+    #     return
+
+
+@slash_team.subcommand(name="lock", description="Lockout team from guessing for a set period of time")
+async def slash_team_sub_lock(interaction: nextcord.Interaction,
+                              duration: int = SlashOption(name="duration", description="Minutes to lockout team", required=False, default=15)):
     if not (is_admin(interaction.user.id) or is_scav_manager(interaction.user.id)):
         await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
         return
@@ -618,28 +626,43 @@ async def team(interaction: nextcord.Interaction,
         await interaction.response.send_message("Not a scav channel")
         return
 
-    if action == "unlock":
-        await active_scav_team.unlock()
-        scav_game.save_team_info()
-        await interaction.response.send_message("Team unlocked", ephemeral=True)
+    await active_scav_team.lockout(duration)
+    scav_game.save_team_info()
+    await interaction.response.send_message(f"Team locked out for {duration} minutes", ephemeral=True)
+    return
+
+
+@slash_team.subcommand(name="unlock", description="Immediately unlock team to allow guessing")
+async def slash_team_sub_unlock(interaction: nextcord.Interaction):
+    if not (is_admin(interaction.user.id) or is_scav_manager(interaction.user.id)):
+        await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
         return
 
-    elif action == "lock":
-        await interaction.response.send_message("Not quite finished...", ephemeral=True)
+    active_scav_team = scav_game.is_scav_channel(interaction.channel_id)
+    if active_scav_team is False:
+        await interaction.response.send_message("Not a scav channel")
         return
 
-    elif action == "reset":
-        if not is_admin(interaction.user.id):
-            await interaction.response.send_message("Admin required to use the reset commmand.", ephemeral=True)
-            return
+    await active_scav_team.unlock()
+    scav_game.save_team_info()
+    await interaction.response.send_message("Team unlocked", ephemeral=True)
+    return
 
-        await active_scav_team.reset_team()
-        await interaction.response.send_message("Scav Team Reset", ephemeral=True)
+
+@slash_team.subcommand(name="reset", description="Reset all of a team's progress")
+async def slash_team_sub_reset(interaction: nextcord.Interaction):
+    if not is_admin(interaction.user.id):
+        await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
         return
 
-    else:
-        logger.error(f"Unkown action {action}")
+    active_scav_team = scav_game.is_scav_channel(interaction.channel_id)
+    if active_scav_team is False:
+        await interaction.response.send_message("Not a scav channel")
         return
+
+    await active_scav_team.reset_team()
+    await interaction.response.send_message("Scav Team Reset", ephemeral=True)
+    return
 
 
 @client.slash_command(guild_ids=settings["guild_ids"], description="Get the current question", name="question")
