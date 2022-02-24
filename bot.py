@@ -269,7 +269,6 @@ class ScavGame():
         if team_name == None:
             team_name = "Team {}".format(len(self.teams))
         logger.debug("Team name: %s", team_name)
-        # role = await guild.create_role(name=team_name, colour=nextcord.Colour.gold)
         new_role = await guild.create_role(name=team_name)
         scav_manager_role = guild.get_role(settings["scav_manager_role"])
         overwrites = {
@@ -278,6 +277,8 @@ class ScavGame():
             scav_manager_role: nextcord.PermissionOverwrite(read_messages=True)
         }
         channel = await guild.create_text_channel(team_name, overwrites=overwrites)
+        # If you are getting an error here of 'NoneType' has no attribute 'id',
+        # then the role id in setting is probably incorrect
         team_details = BLANK_TEAM_CSV
         team_details["role"] = new_role.id
         team_details["team_name"] = team_name
@@ -494,12 +495,6 @@ async def on_message(message):
             if user_id in quick_settings["scav_manager_ids"]:
                 quick_settings["scav_manager_ids"].remove(user_id)
             await message.delete()
-        elif message_array[0] == "\\create_team":
-            if len(message_array) > 1:
-                team_name = message_array[1]
-            else:
-                team_name = None
-            await scav_game.new_scav_team(team_name)
         else:
             return
     else:
@@ -542,6 +537,8 @@ async def guess(interaction: nextcord.Interaction, answer: str = SlashOption(nam
         # TODO Update the way lockout times are displayed
         await interaction.response.send_message("You are locked out for {}:{}".format(floor(lockout_time / 60), lockout_time % 60))
     return
+
+# region Scav Subcommands
 
 
 @client.slash_command(guild_ids=settings["guild_ids"], name="scav")
@@ -604,6 +601,10 @@ async def slash_scav_sub_send_sub_introduction(interaction: nextcord.Interaction
     await interaction.response.send_message("Introductions sent.", ephemeral=True)
     return
 
+# endregion
+
+# region Team Commands
+
 
 @client.slash_command(guild_ids=settings["guild_ids"], name="team")
 async def slash_team(interaction: nextcord.Interaction):
@@ -659,6 +660,16 @@ async def slash_team_sub_reset(interaction: nextcord.Interaction):
     await active_scav_team.reset_team()
     await interaction.response.send_message("Scav Team Reset", ephemeral=True)
     return
+
+
+@slash_team.subcommand(name="create", description="Create a new scav team and channels")
+async def slash_team_sub_create(interaction: nextcord.Interaction, team_name: str = SlashOption(name="name", description="Team name",
+                                                                                                required=False, default=None)):
+    await scav_game.new_scav_team(team_name)
+    await interaction.response.send_message("New team created", ephemeral=True)
+
+
+# endregion
 
 
 @client.slash_command(guild_ids=settings["guild_ids"], description="Get the current question", name="question")
