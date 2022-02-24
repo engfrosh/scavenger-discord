@@ -418,73 +418,6 @@ async def on_message(message):
         return
     message_array = message.content.lower().strip().split()
 
-    # * NEW TEAM
-    if settings["scav"]["self_registration_allowed"] and message_array[0] == "\\newteam":
-        if len(message_array) > 1:
-            team_name = " ".join(message_array[1:])
-        else:
-            team_name = "Team {}".format(len(scav_game.teams))
-        logger.debug("Creating team %s", team_name)
-        reg_codes = await scav_game.new_scav_team(team_name=team_name)
-        code_msg = "Here are your scav team registration codes for team {team_name}\n".format(team_name=team_name)
-        code_msg += "```\n"
-        for code in reg_codes:
-            code_msg += code + "\n"
-        code_msg += "```"
-        code_msg += "Send one of these codes in a channel in the discord server. Send these to your teammates and have them do the same."
-        await message.author.send(code_msg)
-        await message.delete()
-        return
-
-    # * Authenticate New User
-    if message_array[0][0] == "$":
-        await message.delete()
-        if message_array[0] in user_registrations:
-            if user_registrations[message_array[0]]["user_id"] == 0:
-                if user_registrations[message_array[0]]["account_type"] == "admin":
-                    if message.author.id not in settings["admin_users"]:
-                        user_registrations[message_array[0]
-                                           ]["user_id"] = message.author.id
-                        save_user_registrations()
-                        settings["admin_users"].append(message.author.id)
-                        save_settings()
-                        quick_settings["admin_ids"].add(message.author.id)
-                        role = guild.get_role(settings["admin_role"])
-                        await message.author.add_roles(role)
-                        await message.channel.send("Welcome Admin!")
-                    else:
-                        await message.channel.send("Already an Admin")
-                elif user_registrations[message_array[0]]["account_type"] == "scav_manager":
-                    if message.author.id not in settings["scav_manager_users"] and message.author.id not in settings["admin_users"]:
-                        user_registrations[message_array[0]
-                                           ]["user_id"] = message.author.id
-                        save_user_registrations()
-                        settings["scav_manager_users"].append(
-                            message.author.id)
-                        save_settings()
-                        quick_settings["scav_manager_ids"].add(
-                            message.author.id)
-                        role = guild.get_role(settings["scav_manager_role"])
-                        await message.author.add_roles(role)
-                        await message.channel.send("Welcome Scav Manager!")
-                    else:
-                        await message.channel.send("Already a Scav Manager or Higher")
-                elif user_registrations[message_array[0]]["account_type"] == "scav_player":
-                    if message.author.id not in settings["scav_manager_users"] and message.author.id not in settings["admin_users"]:
-                        user_registrations[message_array[0]
-                                           ]["user_id"] = message.author.id
-                        save_user_registrations()
-                        await scav_game.teams[user_registrations[message_array[0]]["scav_team"]].add_player(
-                            message.author)
-                        await message.channel.send("Welcome Scav Player!")
-                    else:
-                        await message.channel.send("Already a Scav Manager or Higher")
-            else:
-                await message.channel.send("Activation code already used")
-        else:
-            await message.channel.send("Invalid activation code")
-        return
-
     # * Admin Commands
     if is_admin(message.author.id):
         if message_array[0] == "\\remove_scav_manager":
@@ -601,6 +534,31 @@ async def slash_scav_sub_send_sub_introduction(interaction: nextcord.Interaction
     await interaction.response.send_message("Introductions sent.", ephemeral=True)
     return
 
+
+@slash_scav.subcommand(name="register", description="Create a new scav team for yourself")
+async def slash_scav_sub_register(interaction: nextcord.Interaction,
+                                  team_name: str = SlashOption(name="name", description="Your new team's name", required=False, default=None)):
+    if not settings["scav"]["self_registration_allowed"]:
+        await interaction.response.send_message("Self registration of teams is not currently enabled.", ephemeral=True)
+        return
+
+    if not team_name:
+        team_name = "Team {}".format(len(scav_game.teams))
+
+    logger.debug("Creating team %s", team_name)
+    reg_codes = await scav_game.new_scav_team(team_name=team_name)
+
+    code_msg = "Here are your scav team registration codes for team {team_name}\n".format(team_name=team_name)
+    code_msg += "```\n"
+    for code in reg_codes:
+        code_msg += code + "\n"
+    code_msg += "```"
+    code_msg += "Send one of these codes in a channel using `/authenticate code: $code`. Send the rest to your teammates and have them do the same."
+
+    await interaction.user.send(code_msg)
+    await interaction.response.send_message("Check your DMs for your team's registration codes.", ephemeral=True)
+    return
+
 # endregion
 
 # region Team Commands
@@ -703,6 +661,70 @@ async def slash_get_hint(interaction: nextcord.Interaction):
     else:
         await interaction.response.send_message("SCAV is not enabled")
 
+
+@client.slash_command(guild_ids=settings["guild_ids"],
+                      name="authenticate", description="Get your roles using your secret code")
+async def slash_authenticate(interaction: nextcord.Interaction, code=SlashOption(name="code", description="Your secret code", required=True)):
+    if code[0] != "$":
+        code = f"${code}"
+
+    # TODO Have Nickname Change on Registration
+
+    if code not in user_registrations:
+        await interaction.response.send_message("Invalid activation code", ephemeral=True)
+        return
+
+    if user_registrations[code]["user_id"] != 0:
+        await interaction.response.send_message("Activation code already used", ephemeral=True)
+        return
+
+    if user_registrations[code]["account_type"] == "admin":
+        if interaction.user.id not in settings["admin_users"]:
+            user_registrations[code]["user_id"] = interaction.user.id
+            save_user_registrations()
+            settings["admin_users"].append(interaction.user.id)
+            save_settings()
+            quick_settings["admin_ids"].add(interaction.user.id)
+            role = guild.get_role(settings["admin_role"])
+            await interaction.user.add_roles(role)
+            await interaction.response.send_message("Welcome Admin!", ephemeral=True)
+            return
+
+        else:
+            await interaction.response.send_message("Already an Admin")
+            return
+
+    elif user_registrations[code]["account_type"] == "scav_manager":
+        if interaction.user.id not in settings["scav_manager_users"] and interaction.user.id not in settings["admin_users"]:
+            user_registrations[code]["user_id"] = interaction.user.id
+            save_user_registrations()
+            settings["scav_manager_users"].append(interaction.user.id)
+            save_settings()
+            quick_settings["scav_manager_ids"].add(interaction.user.id)
+            role = guild.get_role(settings["scav_manager_role"])
+            await interaction.user.add_roles(role)
+            await interaction.response.send_message("Welcome Scav Manager!")
+            return
+
+        else:
+            await interaction.response.send_message("Already a Scav Manager or Higher")
+            return
+
+    elif user_registrations[code]["account_type"] == "scav_player":
+        if interaction.user.id not in settings["scav_manager_users"] and interaction.user.id not in settings["admin_users"]:
+            user_registrations[code]["user_id"] = interaction.user.id
+            save_user_registrations()
+            await scav_game.teams[user_registrations[code]["scav_team"]].add_player(interaction.user)
+            await interaction.response.send_message("Welcome Scav Player!")
+            return
+
+        else:
+            await interaction.response.send_message("Already a Scav Manager or Higher")
+            return
+
+    else:
+        logger.error("Invalid account type")
+        await interaction.response.send_message("Error, database failure, please contact admin.")
 
 # region Load Credentials
 with open(settings["credentials_file"], "r") as f:
