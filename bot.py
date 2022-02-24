@@ -410,29 +410,6 @@ async def on_ready():
         save_settings()
 
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-    if message.guild.id != settings["guild_id"]:
-        return
-    message_array = message.content.lower().strip().split()
-
-    # * Admin Commands
-    if is_admin(message.author.id):
-        if message_array[0] == "\\remove_scav_manager":
-            user_id = int(message_array[1])
-            if user_id in settings["scav_manager_users"]:
-                settings["scav_manager_users"].remove(user_id)
-                save_settings()
-            if user_id in quick_settings["scav_manager_ids"]:
-                quick_settings["scav_manager_ids"].remove(user_id)
-            await message.delete()
-        else:
-            return
-    else:
-        return
-
 load_all_settings()
 
 
@@ -642,6 +619,23 @@ async def slash_get_question(interaction: nextcord.Interaction):
     else:
         await interaction.response.send_message("This is not a SCAV channel!", ephemeral=True)
     return
+
+
+@client.slash_command(guild_ids=settings["guild_ids"],
+                      name="remove_scav_manager", description="Remove a user from interal scav manager database")
+async def slash_remove_scav_manager(interaction: nextcord.Interaction,
+                                    user_id: str = SlashOption(name="user_id", description="The user id to remove", required=True)):
+    user_id = int(user_id)
+    if is_admin(interaction.user.id):
+        if user_id in settings["scav_manager_users"]:
+            settings["scav_manager_users"].remove(user_id)
+            save_settings()
+        if user_id in quick_settings["scav_manager_ids"]:
+            quick_settings["scav_manager_ids"].remove(user_id)
+        await interaction.response.send_message("Scav Manager Removed", ephemeral=True)
+        return
+
+    await interaction.response.send_message("You do not have permission to use this command", ephemeral=True)
 
 
 @client.slash_command(guild_ids=settings["guild_ids"], description="Get a hint for the current question", name="hint")
