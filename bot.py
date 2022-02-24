@@ -520,10 +520,6 @@ async def on_message(message):
             else:
                 team_name = None
             await scav_game.new_scav_team(team_name)
-        elif message_array[0] == "\\leaderboard":
-            await scav_game.leaderboard()
-        elif message_array[0] == "\\welcome":
-            await scav_game.send_introductions()
         else:
             return
     else:
@@ -573,7 +569,9 @@ async def scav(interaction: nextcord.Interaction,
                action: str = SlashOption(name="action",
                                          description="The action to manage the scav game.", required=True, choices={
                                              "enable": "enable",
-                                             "disable": "disable"
+                                             "disable": "disable",
+                                             "update leaderboard": "update_leaderboard",
+                                             "send introduction": "send_introduction"
                                          })):
 
     if not is_admin(interaction.user.id):
@@ -589,6 +587,14 @@ async def scav(interaction: nextcord.Interaction,
         settings["scav"]["enabled"] = False
         save_settings()
         await interaction.response.send_message("Scav is now disabled.")
+        return
+    elif action == "update_leaderboard":
+        await scav_game.leaderboard()
+        await interaction.response.send_message("Leaderboard updated.", ephemeral=True)
+        return
+    elif action == "send_introduction":
+        await scav_game.send_introductions()
+        await interaction.response.send_message("Introductions sent.", ephemeral=True)
         return
     else:
         logger.error(f"Invalid action {action}")
