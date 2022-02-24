@@ -634,6 +634,39 @@ async def scav(interaction: nextcord.Interaction,
         logger.error(f"Invalid action {action}")
         return
 
+
+@client.slash_command(guild_ids=settings["guild_ids"], description="Manage scav teams")
+async def team(interaction: nextcord.Interaction,
+               action: str = SlashOption(name="action", description="The action to manage the scav team", required=True,
+                                         choices={
+                                             "lock": "lock",
+                                             "unlock": "unlock"
+                                         })):
+    if not (is_admin(interaction.user.id) or is_scav_manager(interaction.user.id)):
+        await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
+        return 
+
+    active_scav_team = scav_game.is_scav_channel(interaction.channel_id)
+    if active_scav_team is False:
+        await interaction.response.send_message("Not a scav channel")
+        return 
+
+    if action == "unlock":
+        await active_scav_team.unlock()
+        scav_game.save_team_info()
+        await interaction.response.send_message("Team unlocked", ephemeral=True)
+        return
+
+    elif action == "lock":
+        await interaction.response.send_message("Not quite finished...", ephemeral=True)
+        return
+
+    else:
+        logger.error(f"Unkown action {action}")
+        return
+
+    
+
     # region Load Credentials
 with open(settings["credentials_file"], "r") as f:
     credentials = json.load(f)
