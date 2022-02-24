@@ -1,4 +1,5 @@
-import discord
+import nextcord
+from nextcord.ext import commands
 
 import logging
 import os
@@ -12,7 +13,6 @@ from math import ceil, floor
 import string
 import random
 
-# CURRENT_DIRECTORY = os.path.dirname(__file__)
 LOG_LEVEL = logging.DEBUG
 SCAV_QUESTIONS_FILE = "scav_questions.json"
 SETTINGS_FILE = "settings.json"
@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
 # endregion
 
-client = discord.Client()
+client = commands.Bot("!")
 
 # region Variable Declerations
 quick_settings = {}
@@ -146,7 +146,7 @@ class ScavTeam():
                                           ]["file_display_name"]
             else:
                 filename = None
-            f = discord.File(
+            f = nextcord.File(
                 scav_questions[self.team_info["current_question"]]["file"], filename=filename)
         else:
             f = None
@@ -158,7 +158,7 @@ class ScavTeam():
                                               ]["file_display_name"]
                 else:
                     filename = None
-                f = discord.File(
+                f = nextcord.File(
                     scav_questions[self.team_info["current_question"]]["hint_file"], filename=filename)
             else:
                 f = None
@@ -177,7 +177,7 @@ class ScavTeam():
                                           ]["file_display_name"]
             else:
                 filename = None
-            f = discord.File(
+            f = nextcord.File(
                 scav_questions[self.team_info["current_question"]]["hint_file"], filename=filename)
         else:
             f = None
@@ -265,13 +265,13 @@ class ScavGame():
         if team_name == None:
             team_name = "Team {}".format(len(self.teams))
         logger.debug("Team name: %s", team_name)
-        # role = await guild.create_role(name=team_name, colour=discord.Colour.gold)
+        # role = await guild.create_role(name=team_name, colour=nextcord.Colour.gold)
         new_role = await guild.create_role(name=team_name)
         scav_manager_role = guild.get_role(settings["scav_manager_role"])
         overwrites = {
-            guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            new_role: discord.PermissionOverwrite(read_messages=True),
-            scav_manager_role: discord.PermissionOverwrite(read_messages=True)
+            guild.default_role: nextcord.PermissionOverwrite(read_messages=False),
+            new_role: nextcord.PermissionOverwrite(read_messages=True),
+            scav_manager_role: nextcord.PermissionOverwrite(read_messages=True)
         }
         channel = await guild.create_text_channel(team_name, overwrites=overwrites)
         team_details = BLANK_TEAM_CSV
