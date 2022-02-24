@@ -455,22 +455,6 @@ async def on_message(message):
         await message.delete()
         return
 
-    # * Get Hing
-    if (message_array[0] == "\\hint"):
-        active_scav_team = scav_game.is_scav_channel(message.channel.id)
-        if active_scav_team is not False:
-            if active_scav_team.is_team_member(message.author.id):
-                if settings["scav"]["enabled"]:
-                    await active_scav_team.send_hint()
-                else:
-                    await message.channel.send("SCAV is not enabled")
-            else:
-                await message.channel.send("You are not allowed to ask for hints in this channel!")
-                return
-        else:
-            await message.channel.send("This is not a SCAV channel!")
-        return
-
     # * Get Help
     if message_array[0] == "\\help":
         if scav_game.is_scav_channel(message.channel.id):
@@ -666,6 +650,24 @@ async def slash_get_question(interaction: nextcord.Interaction):
     else:
         await interaction.response.send_message("This is not a SCAV channel!", ephemeral=True)
     return
+
+
+@client.slash_command(guild_ids=settings["guild_ids"], description="Get a hint for the current question", name="hint")
+async def slash_get_hint(interaction: nextcord.Interaction):
+    active_scav_team = scav_game.is_scav_channel(interaction.channel_id)
+    if active_scav_team is False:
+        await interaction.response.send_message("This is not a SCAV channel!", ephemeral=True)
+        return
+
+    if not active_scav_team.is_team_member(interaction.user.id):
+        await interaction.response.send_message("You are not allowed to ask for hints in this channel!", ephemeral=True)
+        return
+
+    if settings["scav"]["enabled"]:
+        await active_scav_team.send_hint()
+        await interaction.response.send_message("Here is your hint:", ephemeral=True)
+    else:
+        await interaction.response.send_message("SCAV is not enabled")
 
 # region Load Credentials
 with open(settings["credentials_file"], "r") as f:
