@@ -654,6 +654,9 @@ async def slash_get_hint(interaction: nextcord.Interaction):
 @client.slash_command(guild_ids=[settings["guild_id"]],
                       name="authenticate", description="Get your roles using your secret code")
 async def slash_authenticate(interaction: nextcord.Interaction, code=SlashOption(name="code", description="Your secret code", required=True)):
+    # If you get an error for permission denied when trying to change a nickname, it may be that the bot role is not at the
+    # top of the bot list, so is unable to change the higher roled people. 
+    
     if code[0] != "$":
         code = f"${code}"
 
@@ -676,6 +679,8 @@ async def slash_authenticate(interaction: nextcord.Interaction, code=SlashOption
             quick_settings["admin_ids"].add(interaction.user.id)
             role = guild.get_role(settings["admin_role"])
             await interaction.user.add_roles(role)
+            if user_registrations[code]["nickname"]:
+                await interaction.user.edit(nick=user_registrations[code]["nickname"])
             await interaction.response.send_message("Welcome Admin!", ephemeral=True)
             return
 
@@ -691,6 +696,8 @@ async def slash_authenticate(interaction: nextcord.Interaction, code=SlashOption
             save_settings()
             quick_settings["scav_manager_ids"].add(interaction.user.id)
             role = guild.get_role(settings["scav_manager_role"])
+            if user_registrations[code]["nickname"]:
+                await interaction.user.edit(nick=user_registrations[code]["nickname"])
             await interaction.user.add_roles(role)
             await interaction.response.send_message("Welcome Scav Manager!")
             return
@@ -704,6 +711,8 @@ async def slash_authenticate(interaction: nextcord.Interaction, code=SlashOption
             user_registrations[code]["user_id"] = interaction.user.id
             save_user_registrations()
             await scav_game.teams[user_registrations[code]["scav_team"]].add_player(interaction.user)
+            if user_registrations[code]["nickname"]:
+                await interaction.user.edit(nick=user_registrations[code]["nickname"])
             await interaction.response.send_message("Welcome Scav Player!")
             return
 

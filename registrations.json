@@ -39,7 +39,7 @@
         "name": "",
         "nickname": "",
         "account_type": "scav_player",
-        "user_id": 0,
+        "user_id": 742469067134206125,
         "scav_team": 813085822932090921,
         "team_name": "Team 1"
     },
@@ -266,5 +266,101 @@
         "user_id": 742469067134206125,
         "scav_team": 813093849470730250,
         "team_name": "Team 10"
+    },
+    "$lwkpnudr": {
+        "name": "",
+        "nickname": "",
+        "account_type": "scav_player",
+        "user_id": 0,
+        "scav_team": 946525465366126732,
+        "team_name": "Team 2"
+    },
+    "$btulkk4t": {
+        "name": "",
+        "nickname": "",
+        "account_type": "scav_player",
+        "user_id": 0,
+        "scav_team": 946525465366126732,
+        "team_name": "Team 2"
+    },
+    "$w1c37jua": {
+        "name": "",
+        "nickname": "",
+        "account_type": "scav_player",
+        "user_id": 742469067134206125,
+        "scav_team": 946525465366126732,
+        "team_name": "Team 2"
+    },
+    "$zw3t0f5w": {
+        "name": "",
+        "nickname": "",
+        "account_type": "scav_player",
+        "user_id": 0,
+        "scav_team": 946525541719216209,
+        "team_name": "Rob's Team"
+    },
+    "$o105uj5w": {
+        "name": "",
+        "nickname": "",
+        "account_type": "scav_player",
+        "user_id": 0,
+        "scav_team": 946525541719216209,
+        "team_name": "Rob's Team"
+    },
+    "$6q6pxya4": {
+        "name": "",
+        "nickname": "",
+        "account_type": "scav_player",
+        "user_id": 742469067134206125,
+        "scav_team": 946525541719216209,
+        "team_name": "Rob's Team"
+    },
+    "$qjbrs3bk": {
+        "name": "",
+        "nickname": "",
+        "account_type": "scav_player",
+        "user_id": 0,
+        "scav_team": 946540686918967347,
+        "team_name": "The Rise of Bob"
+    },
+    "$1hp2ecy3": {
+        "name": "",
+        "nickname": "",
+        "account_type": "scav_player",
+        "user_id": 0,
+        "scav_team": 946540686918967347,
+        "team_name": "The Rise of Bob"
+    },
+    "$wj3o07j4": {
+        "name": "",
+        "nickname": "",
+        "account_type": "scav_player",
+        "user_id": 0,
+        "scav_team": 946540686918967347,
+        "team_name": "The Rise of Bob"
+    },
+    "$wheba8if": {
+        "name": "",
+        "nickname": "",
+        "account_type": "scav_player",
+        "user_id": 0,
+        "scav_team": 946541123550191646,
+        "team_name": "A new Bobrizon"
+    },
+    "$0a5gdraw": {
+        "name": "",
+        "nickname": "",
+        "account_type": "scav_player",
+        "user_id": 0,
+        "scav_team": 946541123550191646,
+        "team_name": "A new Bobrizon"
+    },
+    "$kisnn4gm": {
+        "name": "",
+        "nickname": "Test Nickname",
+        "account_type": "scav_player",
+        "user_id": 742469067134206125,
+        "scav_team": 946541123550191646,
+        "team_name": "A new Bobrizon"
     }
 }
