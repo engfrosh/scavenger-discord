@@ -82,18 +82,16 @@ class ScavTeam():
     def is_team_member(self, author_id: int):
         return author_id in self.team_info["members"]
 
-    def is_team_locked_out(self):
-        """Returns number of seconds if still locked out, otherwise returns 0"""
+    @property
+    def remaining_lockout_time(self) -> dt.timedelta:
+        """Returns the timedelta of remaining time if still locked out, otherwise returns a timedelta(0) which is falsey."""
+
         if not self.team_info["locked_out_until"]:
-            return False
-        locked_out_time = dt.datetime.fromisoformat(
-            self.team_info["locked_out_until"])
+            return dt.timedelta(0)
+        locked_out_time = dt.datetime.fromisoformat(self.team_info["locked_out_until"])
         now = dt.datetime.now()
         delta = locked_out_time - now
-        if delta > dt.timedelta(0):
-            return ceil(delta.total_seconds())
-        else:
-            return 0
+        return max(delta, dt.timedelta(0))
 
     async def check_answer(self, guess):
         if self.team_info["finished"]:
@@ -437,14 +435,12 @@ async def guess(interaction: nextcord.Interaction, answer: str = SlashOption(nam
         await interaction.response.send_message("SCAV is currently disabled")
         return
 
-    lockout_time = active_scav_team.is_team_locked_out()
-    if lockout_time == 0:
+    lockout_time = active_scav_team.remaining_lockout_time
+    if lockout_time:
+        await interaction.response.send_message(f"You are locked out for {lockout_time - dt.timedelta(microseconds=lockout_time.microseconds)}")
+    else:
         await interaction.response.send_message(f"Checking your answer: {answer}")
         await active_scav_team.check_answer(answer)
-
-    else:
-        # TODO Update the way lockout times are displayed
-        await interaction.response.send_message("You are locked out for {}:{}".format(floor(lockout_time / 60), lockout_time % 60))
     return
 
 # region Scav Subcommands
