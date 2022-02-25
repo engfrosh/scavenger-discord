@@ -24,6 +24,11 @@
         "self_registration_allowed": false,
         "default_team_size": 3
     },
+    "roles": {
+        "they/them": 946563605887860746,
+        "she/her": 946567807536078859,
+        "he/him": 946567832391532605
+    },
     "bot_status_channel_active": true,
     "bot_status_channel_id": 807100215651074109,
     "help_text": "Welcome to SCAV!\nUse the following slash commands to play. Use `/question` to get a question, use `/guess` to guess, for example what is my favorite plant `/guess SNAKEPLANT`. If you get stuck and need a hint, you can get one by sending `/hint`, but watch out, you will be locked out for 15 minutes. If you need any  help with the bot please at `@Grant`."

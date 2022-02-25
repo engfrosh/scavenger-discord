@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 from nextcord import SlashOption
 import nextcord
 
@@ -81,7 +81,10 @@ class ScavTeam():
 
     @property
     def remaining_lockout_time(self) -> dt.timedelta:
-        """Returns the timedelta of remaining time if still locked out, otherwise returns a timedelta(0) which is falsey."""
+        """
+        Returns the timedelta of remaining time if still locked out, otherwise returns 
+        a timedelta(0) which is falsey.
+        """
 
         if not self.team_info["locked_out_until"]:
             return dt.timedelta(0)
@@ -395,13 +398,18 @@ async def on_ready():
     guild = await client.fetch_guild(settings["guild_id"])
     channels["bot_status_channel"] = await client.fetch_channel(settings["channels"]["bot_status_channel"])
     channels["leaderboard_channel"] = await client.fetch_channel(settings["channels"]["leaderboard_channel"])
-    await channels["bot_status_channel"].send("Hello, I am now working! It is currently {datetime}".format(datetime=dt.datetime.now().isoformat()))
-    await reload_files()
     if "profile_picture" in settings and not settings["profile_picture_set"]:
         with open(settings["profile_picture"], "rb") as f:
             await client.user.edit(avatar=f.read())
         settings["profile_picture_set"] = True
         save_settings()
+
+    # region Open Persistant Views
+    client.add_view(PronounSelect())
+    # endregion
+
+    await channels["bot_status_channel"].send("Hello, I am now working! It is currently {datetime}".format(datetime=dt.datetime.now().isoformat()))
+    await reload_files()
 
 
 load_all_settings()
@@ -718,6 +726,57 @@ async def slash_authenticate(interaction: nextcord.Interaction, code=SlashOption
     else:
         logger.error("Invalid account type")
         await interaction.response.send_message("Error, database failure, please contact admin.")
+
+# region
+
+
+class PronounSelect(nextcord.ui.View):
+    def __init__(self, *, timeout: Optional[float] = 180):
+        super().__init__(timeout=None)
+
+    async def add_pronoun(self, interaction: nextcord.Interaction, key: str, display: str):
+        if key not in settings["roles"]:
+            role = await guild.create_role(name=display)
+            settings["roles"][key] = role.id
+            save_settings()
+        else:
+            role = guild.get_role(settings["roles"][key])
+            if not role:
+                logger.error(f"Could not get role for id {settings['roles'][key]}")
+                await interaction.response.send_message("Server issue, please message admin.", ephemeral=True)
+                return
+
+        await interaction.user.add_roles(role)
+        await interaction.response.send_message("Added your selected pronouns", ephemeral=True)
+
+    @nextcord.ui.button(label="They/Them", style=nextcord.ButtonStyle.grey, custom_id="persistant_pronoun_they")
+    async def select_they(self, button: nextcord.ui.Button, interaction: nextcord.Interaction):
+        await self.add_pronoun(interaction, "they/them", "They / Them")
+
+    @nextcord.ui.button(label="She/Her", style=nextcord.ButtonStyle.grey, custom_id="persistant_pronoun_she")
+    async def select_she(self, button: nextcord.ui.Button, interaction: nextcord.Interaction):
+        await self.add_pronoun(interaction, "she/her", "She / Her")
+
+    @nextcord.ui.button(label="He/Him", style=nextcord.ButtonStyle.grey, custom_id="persistant_pronoun_he")
+    async def select_he(self, button: nextcord.ui.Button, interaction: nextcord.Interaction):
+        await self.add_pronoun(interaction, "he/him", "He / Him")
+
+    @nextcord.ui.button(label="Other", style=nextcord.ButtonStyle.grey, custom_id="persistant_pronoun_other")
+    async def select_other(self, button: nextcord.ui.Button, interaction: nextcord.Interaction):
+        await interaction.response.send_message("Please message an admin so we can add your pronoun role", ephemeral=True)
+
+
+@client.slash_command(guild_ids=[settings["guild_id"]], name="send")
+async def slash_send(interaction: nextcord.Interaction):
+    pass
+
+
+@slash_send.subcommand(name="pronoun_select", description="Send pronoun selector message in this channel")
+async def slash_send_sub_pronoun_select(interaction: nextcord.Interaction):
+    view = PronounSelect()
+    await interaction.channel.send("Please select your pronouns.", view=view)
+    await interaction.response.send_message("Pronound selection message sent.", ephemeral=True)
+# endregion
 
 # region Load Credentials
 with open(settings["credentials_file"], "r") as f:
