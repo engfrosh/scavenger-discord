@@ -174,8 +174,7 @@ class ScavTeam():
             return
         if "hint_file" in scav_questions[self.team_info["current_question"]]:
             if "hint_file_display" in scav_questions[self.team_info["current_question"]]:
-                filename = scav_questions[self.team_info["current_question"]
-                                          ]["file_display_name"]
+                filename = scav_questions[self.team_info["current_question"]]["hint_file_display"]
             else:
                 filename = None
             f = nextcord.File(

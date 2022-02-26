@@ -2,12 +2,82 @@
     "819693996104351785": {
         "role": 946476976011612160,
         "team_name": "Team 0",
+        "current_question": 6,
+        "locked_out_until": "",
+        "last_hint": 5,
+        "members": [
+            742469067134206125,
+            360895010494742529
+        ],
+        "finished": true,
+        "finish_time": "2022-02-26T10:30:32.007519",
+        "question_completion_time": {
+            "0": "2022-02-26T10:24:27.560087",
+            "1": "2022-02-26T10:24:58.644916",
+            "2": "2022-02-26T10:25:15.832702",
+            "3": "2022-02-26T10:25:27.089909",
+            "4": "2022-02-26T10:28:07.016243",
+            "5": "2022-02-26T10:30:31.796605"
+        }
+    },
+    "946525154433974302": {
+        "role": 946525153351827557,
+        "team_name": "Team 1",
+        "current_question": 0,
+        "locked_out_until": "",
+        "last_hint": -1,
+        "members": [],
+        "finished": false,
+        "finish_time": "",
+        "question_completion_time": {}
+    },
+    "946525465366126732": {
+        "role": 946525464296574987,
+        "team_name": "Team 2",
+        "current_question": 0,
+        "locked_out_until": "",
+        "last_hint": -1,
+        "members": [
+            742469067134206125
+        ],
+        "finished": false,
+        "finish_time": "",
+        "question_completion_time": {}
+    },
+    "946525541719216209": {
+        "role": 946525541035573278,
+        "team_name": "Rob's Team",
+        "current_question": 0,
+        "locked_out_until": "",
+        "last_hint": -1,
+        "members": [
+            742469067134206125
+        ],
+        "finished": false,
+        "finish_time": "",
+        "question_completion_time": {}
+    },
+    "946540686918967347": {
+        "role": 946540686168195122,
+        "team_name": "The Rise of Bob",
+        "current_question": 0,
+        "locked_out_until": "",
+        "last_hint": -1,
+        "members": [],
+        "finished": false,
+        "finish_time": "",
+        "question_completion_time": {}
+    },
+    "946541123550191646": {
+        "role": 946541122526806047,
+        "team_name": "A new Bobrizon",
         "current_question": 0,
         "locked_out_until": "",
         "last_hint": -1,
         "members": [
             742469067134206125,
-            360895010494742529
+            742469067134206125,
+            742469067134206125
         ],
         "finished": false,
         "finish_time": "",
