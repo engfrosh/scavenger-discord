@@ -605,6 +605,56 @@ async def slash_team_sub_create(interaction: nextcord.Interaction, team_name: st
 
 # endregion
 
+@client.slash_command(guild_ids=[settings["guild_id"]], name="create")
+async def slash_create(interaction: nextcord.Interaction):
+    pass
+
+def create_registration_code(name="", nickname="", level:str=""):
+    if not level:
+        raise ValueError("Missing level")
+
+    code = "$" + "".join(random.choice(string.ascii_lowercase + string.digits) for i in range(8))
+
+    global user_registrations
+
+    if level == "admin":
+        user_registrations[code] = {
+            "name": name,
+            "nickname": nickname,
+            "account_type": "admin",
+            "user_id": 0
+        }
+
+    elif level == "scav_manager":
+        user_registrations[code] = {
+            "name": name,
+            "nickname": nickname,
+            "account_type": "scav_manager",
+            "user_id": 0
+        }
+
+    else:
+        raise ValueError("Invalid value for level.")
+    
+    save_user_registrations()
+    return code
+
+@slash_create.subcommand(name="auth_code", description="Create a new authentication code")
+async def slash_create_sub_auth_code(interaction: nextcord.Interaction, level: str = SlashOption(name="level", description="The permission level of the auth code", required=True, choices={"Admin": "admin", "Scav Manager": "scav_manager"}),
+                                    nickname: str = SlashOption("nickname", description="The nickname of the new user", required=False, default=""),
+                                    name: str = SlashOption("name", description="The name of the new user", required=False, default="")):
+    if not is_admin(interaction.user.id):
+        await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
+        return
+
+    code = create_registration_code(name=name, nickname=nickname, level=level)
+
+    msg = f"Here is the new registration code for {name} [{nickname}]: `{code}`"
+    await interaction.user.send(msg)
+    await interaction.response.send_message(msg, ephemeral=True)
+
+    return
+
 
 @client.slash_command(guild_ids=[settings["guild_id"]], description="Get the current question", name="question")
 async def slash_get_question(interaction: nextcord.Interaction):
@@ -725,6 +775,8 @@ async def slash_authenticate(interaction: nextcord.Interaction, code=SlashOption
     else:
         logger.error("Invalid account type")
         await interaction.response.send_message("Error, database failure, please contact admin.")
+
+
 
 # region
 

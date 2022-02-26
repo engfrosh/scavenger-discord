@@ -362,5 +362,11 @@
         "user_id": 742469067134206125,
         "scav_team": 946541123550191646,
         "team_name": "A new Bobrizon"
+    },
+    "$z2q9v874": {
+        "name": "Bob Robert",
+        "nickname": "Bobert",
+        "account_type": "scav_manager",
+        "user_id": 0
     }
 }
